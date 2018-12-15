@@ -38,6 +38,8 @@ def LoadMinist():
             y_test_bin.append(y_test_multi[i]==1)
     #将二分类数据集规模减小
     X_train_small = X_train_bin[:train_size]
+    plt.imshow(X_train_small[4])
+    plt.show()
     y_train_small = y_train_bin[:train_size]
     X_test_small = X_test_bin[:test_size]
     y_test_small = y_test_bin[:test_size]
@@ -56,14 +58,16 @@ if __name__ == '__main__':
     np.random.seed(0);
     efficacies = 1.8 * np.random.random(28 * 28) - 0.50
     (train_spike, test_spike)=LoadMinist()
-    work=Tempotron(efficacies,0,10,2.5,1,3);
+    work=Tempotron(efficacies,0,10,2.5,1,20);
     work.Train(train_spike)
-
-    """
+    # work.PlotVT(0,500,train_spike[4][0])
+    #     # work.Train([train_spike[4]]);
+    #     # work.PlotVT(0,500,train_spike[4][0]);
+    #     # print(train_spike[4][1])
+    #     # plt.show()
     cnt=0;
     for i in range(test_size):
       if((work.ComputeMembranePotential(test_spike[i][0],work.ComputeTmax1(test_spike[i][0]))>1)==test_spike[i][1]):
           cnt+=1;
     print('accucy at test data is %f%%' %(cnt/test_size));
-    """
 

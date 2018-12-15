@@ -9,17 +9,23 @@ from matplotlib import pyplot as plt
 
 class Tempotron:
 
-    def __init__(self, w, v_rest, tau, tau_s, thred_hold, max_iter=1, alpha=0.1):
+    def __init__(self, w, v_rest, tau, tau_s, thred_hold, max_iter=1, alpha=0.1,mini_batch=50):
+        #part1:基本参数
         self.w = w;
         self.v_rest = v_rest;
         self.tau = tau;
         self.tau_s = tau_s;
         self.thred_hold = thred_hold;
+        self.v_0 = self.ComputeV_0();
+        #论文method部分所提到的参数设置，但是效果并不是特别好
+        #self.lamb = 0.0001 / self.v_0;
+        self.lamb=1;
+
+        #part2:batch训练参数
         self.max_iter = max_iter;
         self.alpha = alpha;
-        self.v_0 = self.ComputeV_0();
-        self.lamb = 0.0001 / self.v_0;
-        #self.lamb=1;
+        self.mini_batch=mini_batch;
+
 
     def K(self, t, ti, v_0=1):
         if (t < ti):
@@ -62,10 +68,10 @@ class Tempotron:
         plt.ylabel('V(t)');
         ymax = max(max(v), self.thred_hold) + 0.1;
         ymin = min(min(v), -self.thred_hold) - 0.1;
-        plt.axis([0,500,ymin,ymax]);
+        plt.axis([-10,500,ymin,ymax]);
         plt.axhline(y=self.thred_hold, linestyle='--', color='k');
         plot = plt.plot(t, v);
-        #plt.show()
+        plt.show()
 
     # ComputeTmax应该有两种很多求解的方式
     # 1.根据参考资料导数等于0来求解析解解
@@ -107,14 +113,18 @@ class Tempotron:
 
     def Train(self, train_data):
         for i in range(self.max_iter):
-            cnt = 0;
-            for (data, label) in np.random.permutation(train_data):
-                t_max = self.ComputeTmax1(data);
-                v_max = self.ComputeMembranePotential(data, t_max);
-                if ((v_max >= self.thred_hold) == label):
-                    cnt += 1
-            print('%d/%d epoches,accuracy is %f%%' % (i, self.max_iter, 100*cnt / len(train_data)))
-            for (data, label) in np.random.permutation(train_data):
-                if(self.AdaptWeight(data, label)):
-                    print(label)
+            for j in range(self.mini_batch):
+                rand_idx=np.random.permutation()
+                cnt = 0;
+                for i in range(len(train_data)):
+                    (data, label) = train_data[i];
+                    t_max = self.ComputeTmax1(data);
+                    v_max = self.ComputeMembranePotential(data, t_max);
+                    if ((v_max >= self.thred_hold) == label):
+                        cnt += 1
+                print('%d/%d epoches,accuracy is %f%%' % (i, self.max_iter,i,100*cnt / len(train_data)))
+                for i in range(len(train_data)):
+                    (data, label)=train_data[i]
+                    self.AdaptWeight(data, label)
+                        #print("adapt weight for image %d" %i);
 
